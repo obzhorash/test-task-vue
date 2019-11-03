@@ -1,17 +1,16 @@
 <template>
-    <div class="canvas">
-        <div class="circle" :style="styleObject"></div>
+    <div class="container">
+        <div class="canvas">
+            <div class="circle" :style="styleObject"></div>
+        </div>
+        <keyboard @goTo="goTo($event)" :isEnabled="isEnabled"></keyboard>
     </div>
 </template>
 
 <script>
-    import { bus } from '../main.js';
+    import Keyboard from './Keyboard.vue'
 
     export default {
-        created(){
-            bus.$on('goTo', event => this[event.name] = event.value);
-        },
-
         data(){
             return {
                 resolvTop: false,
@@ -19,12 +18,18 @@
                 resolvLeft: false,
                 resolvRight: false,
                 curenLleft: 150,
-                curenTop: 150
+                curenTop: 150,
+                isEnabled: {
+                    top: false,
+                    bottom: false,
+                    right: false,
+                    left: false
+                }
             }       
         },
 
         computed: {
-			styleObject(){
+			styleObject() {
 				return {
                     left: this.curenLleft + 'px',
                     top: this.curenTop + 'px'
@@ -33,48 +38,82 @@
 		},
 
         watch: {
-            resolvTop(){
+            resolvTop() {
                 const fn = () => {
-                    if(this.resolvTop &&  this.curenTop > 0){
-                     this.curenTop -= 1;
-                        setTimeout(fn, 3)
+                    if(this.resolvTop){
+                        this.isEnabled.bottom = false;
+                        if(this.curenTop > 0){
+                            this.curenTop -= 1;
+                            setTimeout(fn, 3)
+                        } else{
+                            this.isEnabled.top = true;
+                            this.resolvTop = false;
+                        }
                     }
                 }
+                setTimeout(fn, 0); 
+            },
+            resolvBottom() {
+                const fn = () =>{
+                    if(this.resolvBottom){
+                        this.isEnabled.top = false;
+                        if(this.curenTop < 300){
+                            this.curenTop += 1;
+                            setTimeout(fn, 3)
+                        } else{
+                            this.isEnabled.bottom = true;
+                            this.resolvBottom = false;
+                        }
 
-                setTimeout(fn, 0); 
-            },
-            resolvBottom(){
-                const fn = () =>{
-                    if(this.resolvBottom &&  this.curenTop < 300){
-                     this.curenTop += 1;
-                        setTimeout(fn, 3)
                     }
                 }
                 setTimeout(fn, 0); 
             },
-            resolvLeft(){
+            resolvLeft() {
                 const fn = () =>{
-                    if(this.resolvLeft &&  this.curenLleft > 0){
-                     this.curenLleft -= 1;
-                        setTimeout(fn,3 )
+                    if(this.resolvLeft){
+                        if(this.curenLleft > 0){
+                            this.isEnabled.right = false;
+                            this.curenLleft -= 1;
+                            setTimeout(fn,3 )
+                        } else{
+                            this.isEnabled.left = true;
+                            this.resolvLeft = false;
+                        }
                     }
                 }
                 setTimeout(fn, 0); 
             },
-            resolvRight(){
+            resolvRight() {
                 const fn = () =>{
-                    if(this.resolvRight &&  this.curenLleft < 300){
-                     this.curenLleft += 1;
-                        setTimeout(fn,3)
+                    if(this.resolvRight){
+                        if(this.curenLleft < 300){
+                            this.isEnabled.left = false;
+                            this.curenLleft += 1;
+                            setTimeout(fn,3)
+                        } else{
+                            this.isEnabled.right = true;
+                            this.resolvRight = false;
+                        }
                     }
                 }
                 setTimeout(fn, 0); 
             }
+        },
+
+        methods: {
+            goTo(event) {
+                 this[event.name] = event.value
+            }
+        },
+
+        components: {
+            Keyboard
         }
     }
 </script>
 
-<style>
+<style scoped>
     .canvas {
         width: 400px;
         height: 400px;
@@ -90,4 +129,11 @@
         border-radius: 50px;
         border: 1px solid #000;
     }
+
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
 </style>
