@@ -37,7 +37,15 @@
 <script>
     export default {
         props: {
-            isEnabled: Object
+            isEnabled: {
+                default: () => ({
+                    top: false,
+                    bottom: false,
+                    right: false,
+                    left: false
+                }),
+                type: Object 
+            }
         },
         methods: {
             goTop(data) {
